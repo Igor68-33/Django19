@@ -1,13 +1,11 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from .models import Buyer, Game
+from .models import Buyer, Game, News
+from django.core.paginator import Paginator
 
 # Create your views here.
 info = {}
 games_buy = []
-# games_buy = ['Atomic Heart']
-# games = ['Atomic Heart',
-#          'Cyberpunk 2077']
 
 
 def queryset_test(request):
@@ -114,3 +112,15 @@ def registration_user(username, password):
     if password == password:
         return f"Приветствуем, {username}!"
     return f"Пароль покупателя {username} не верный."
+
+
+def news(request):
+    # new = News.objects.all()
+    # Получаем все новые игры
+    newss = News.objects.all()
+    # Создаём пагинатор (3 игры на страницу)
+    paginator = Paginator(newss, 3)
+    # Получаем текущую страницу из запроса
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'news.html', context={'news': page_obj})

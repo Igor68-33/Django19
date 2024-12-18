@@ -2,6 +2,9 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from .models import Buyer, Game, News
 from django.core.paginator import Paginator
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from .serializers import BuyerSerializer, GameSerializer
 
 # Create your views here.
 info = {}
@@ -124,3 +127,24 @@ def news(request):
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
     return render(request, 'news.html', context={'news': page_obj})
+
+
+@api_view(['GET'])
+def buyer_list_api(request):
+    buyers = Buyer.objects.all()
+    serializer = BuyerSerializer(buyers, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['GET', 'POST'])
+def game_list_api(request):
+    if request.method == 'GET':
+        games = Game.objects.all()
+        serializer = GameSerializer(games, many=True)
+        return Response(serializer.data)
+    elif request.method == 'POST':
+        serializer = GameSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=201)
+    return Response(serializer.errors, status=400)
